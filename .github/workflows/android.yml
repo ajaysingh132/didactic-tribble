@@ -1,26 +1,42 @@
-name: Android CI
+name: ✅ Android APK Build (Fixed) 
+on: [push, workflow_dispatch] 
+ 
+jobs: 
+  build: 
+    runs-on: ubuntu-latest 
+     
+    steps: 
+    - name: 📥 Checkout code 
+      uses: actions/checkout@v4 
+       
+    - name: ☕ Java 17 Setup 
+      uses: actions/setup-java@v4 
+      with: 
+        java-version: '17' 
+        distribution: 'temurin' 
+         
+    - name: 🗄️ Gradle Wrapper Setup 
+      run: chmod +x gradlew 
+       
+    - name: 📱 Android SDK Setup 
+      uses: android-actions/setup-android@v3 
+       
+    - name: ✅ Accept Licenses 
+      run: yes | sdkmanager --licenses 
+       
+    - name: 🔧 Install SDK 34 
+      run: sdkmanager "platforms;android-34" "build-tools;34.0.0" 
+       
+    - name: 🏗️ Generate Gradle Wrapper 
+      run: | 
+        ./gradlew wrapper --gradle-version 8.6 
+         
+    - name: 🚀 Build Debug APK 
+      run: ./gradlew assembleDebug 
+       
+    - name: 📤 Upload APK 
+      uses: actions/upload-artifact@v4 
+      with: 
+        name: app-debug.apk 
+        path: app/build/outputs/apk/debug/app-debug.apk 
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-jobs:
-  build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-    - name: set up JDK 11
-      uses: actions/setup-java@v4
-      with:
-        java-version: '11'
-        distribution: 'temurin'
-        cache: gradle
-
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-    - name: Build with Gradle
-      run: ./gradlew build
